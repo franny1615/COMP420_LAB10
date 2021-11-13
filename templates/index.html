@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %} Home Page {% endblock %}
+{% block content %}
+<nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="">
+        <img src="{{ url_for('static', filename='imgs/dbIcon.png') }}" alt="" width="30" height="24" class="d-inline-block align-text-top">
+        Database Viewer
+      </a>
+    </div>
+</nav>
+<table class="table">
+    <tbody>
+        <tr>
+            <th scope="row">Select Database:</th>
+            <td>
+                <select class="form-select" aria-label="select-database" onchange="selectedDB(this)" id="dbselect">
+                    {% for db in dblist %} 
+                        <option value="{{ db }}">{{ db }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">Select Table:</th>
+            <td>
+                <select class="form-select" aria-label="select-database" onchange="selectedTB(this)" id="tbselect">
+                    {% for table in tablelist %} 
+                        <option value="{{ table }}">{{ table }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<div id="processing_query"></div>
+<div class="h-100 p-5 text-white bg-dark rounded-3" id="displaytable"></div>
+{% endblock %}

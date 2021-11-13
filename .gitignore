@@ -1,0 +1,2 @@
+# ignore env because on heroku we set those internally for "security"
+.env
