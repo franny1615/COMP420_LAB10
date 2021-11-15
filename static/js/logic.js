@@ -5,7 +5,7 @@ $(document).ready(function () {
 });
 
 let number_of_items = 0;
-let number_per_page = 20;
+let number_per_page = 8;
 let current_page = 1;
 let number_of_pages = 0;
 let column_names = null;
@@ -43,18 +43,11 @@ function callDisplayTable(dbV, tbV){
         type:"post",
         data: {db: dbV, tb: tbV},
         beforeSend: function() {
-            document.getElementById("displaytable").innerHTML = 
-            `
-            <h3 style="text-align:center; width:100%;">Loading...</h3>
-            <div class="progress">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-            </div>
-            `;
+            document.getElementById("displaytable").innerHTML = displayLoadingBar("Loading");
         },
         success: function(response) {
             if (response.query_result === "Success") {
                 number_of_items = response.table_length;
-                number_per_page = 20;
                 current_page = 1;
                 number_of_pages = Math.ceil(number_of_items/number_per_page);
                 column_names = response.column_names;
@@ -70,14 +63,31 @@ function callDisplayTable(dbV, tbV){
     });
 }
 
+function displayLoadingBar(message) {
+    var bar = 
+    `
+        <h3 style="text-align:center; width:100%;">`+message+`</h3>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+        </div>
+    `;
+    return bar;
+    
+}
+
 function buildTable() {
-    data = buildPage(current_page, column_data, number_per_page);
-    var table = `<table class="table table-dark" style="table-layout:fixed;width:100%;"><thead><tr>`;
-    for (let i = 0; i < column_names.length; i++) {
-        table += `<th scope="col">` + column_names[i] + `</th>`
-    }
-    table += `<th scope="col">Actions</th>`
-    table += "</tr></thead><tbody>";
+    var table = `<div style="width:100%;text-align:left;"><h3>Add New Entry:</h3></div>`;
+    // new entry form added in first.
+    table += `<table class="table table-dark" style="table-layout:fixed;width:100%;">`; // in the form of a table for a uniform look
+    table += constructTHead();
+    table += constructEmptyForm();
+    table += `</table>`;
+    // construct table html
+    table += `<div style="width:100%;text-align:left;"><h3>Current Entries:</h3></div>`; 
+    data   = buildPage(current_page, column_data, number_per_page); // helper method that gets a slice of all rows
+    table += `<table class="table table-dark" style="table-layout:fixed;width:100%;">`;
+    table += constructTHead();
+    table += "<tbody>";
     for (let i = 0; i < data.length; i++) {
         table += `<tr id="` + "data_" + i + `">`;
             for(let j = 0; j < data[0].length; j++) {
@@ -103,12 +113,39 @@ function buildTable() {
     table += `
         <nav aria-label="pagination">
             <ul class="pagination">
-            <li class="page-item"><a class="page-link" href="#" onClick="previousPage()">Previous</a></li>
-            <li class="page-item"><a class="page-link" href="#" onClick="nextPage()">Next</a></li>
+            <li class="page-item"><a class="page-link" href="#!" onclick="previousPage()">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="#!" onclick="nextPage()">Next</a></li>
             </ul>
         </nav>
     `;
     document.getElementById("displaytable").innerHTML = table;
+}
+
+function constructTHead() {
+    var thead = `<thead><tr>`;
+    for (let i = 0; i < column_names.length; i++) {
+        thead += `<th scope="col">` + column_names[i] + `</th>`
+    }
+    thead += `<th scope="col">Actions</th>`
+    thead += `</thead></tr>`;
+    return thead;
+}
+
+function constructEmptyForm() {
+    var tbody = `<tbody><tr>`;
+    for(let i = 0; i < column_names.length; i++) {
+        tbody += `<td>` + `<input size="9" type="text" id="new_entry_input_`+i+`"></td>`;
+    }
+    tbody += `<td style="text-align:center;">
+                <button type="button" class="btn btn-outline-success" onclick="addNewEntry()"`+`id="newEntryButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
+                        <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                </button>
+              </td>`;
+    tbody += `</tbody></tr>`
+    return tbody;
 }
 
 function buildPage(currPage, listArray, numberPerPage) {
@@ -153,13 +190,7 @@ function editRow(index) {
                 cached_values: cache
             }),
             beforeSend: function() {
-                document.getElementById("processing_query").innerHTML = 
-                `
-                <h3 style="text-align:center; width:100%;">...Processing Query...</h3>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                </div>
-                `;
+                document.getElementById("processing_query").innerHTML = displayLoadingBar("Processing Query");
             },
             success: function(response) { // on success that means server did the update, saved changes to db
                 if(response.query_result === "Success") {
@@ -181,13 +212,10 @@ function editRow(index) {
 }
 
 function displayAlert(message) {
-    document.getElementById("processing_query").innerHTML = 
-    `<div class="alert alert-warning alert-dismissible fade show" role="alert" style="text-align:center;">`
-    + message +
-    `</div>`;
-    // setTimeout(function(){
-    //     $('.alert').alert('close');
-    // }, 3000);
+    document.getElementById("processing_query").innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert" style="text-align:center;">` + message + `</div>`;
+    setTimeout(function(){
+        $('.alert').alert('close');
+    }, 3000);
 }
 
 function cacheData(index) {
@@ -231,13 +259,7 @@ function deleteRow(index) {
             tb: tbValue
         }),
         beforeSend: function() {
-            document.getElementById("processing_query").innerHTML = 
-            `
-            <h3 style="text-align:center; width:100%;">...Processing Query...</h3>
-            <div class="progress">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-            </div>
-            `;
+            document.getElementById("processing_query").innerHTML = displayLoadingBar("Processing Query");
         },
         success: function(response) { // on success that means server did the update, saved changes to db
             if(response.query_result === "Success") {
@@ -256,4 +278,51 @@ function deleteRow(index) {
             displayAlert("Couldn't Process Query");
         }
     });
+}
+
+function addNewEntry() {
+    var dbValue = document.getElementById('dbselect').value;
+    var tbValue = document.getElementById('tbselect').value;
+    var data = [];
+    for (let i = 0; i < column_names.length; i++) {
+        var val = document.getElementById('new_entry_input_'+i).value;
+        data.push(val);
+    }
+    $.ajax({
+        url:"/addNewEntry",
+        type:"POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            columns: column_names, 
+            values: data, 
+            db: dbValue, 
+            tb: tbValue
+        }),
+        beforeSend: function() {
+            document.getElementById("processing_query").innerHTML = displayLoadingBar("Processing Query");
+        },
+        success: function(response) {
+            if (response.query_result === "Success") {
+                clearInputsNewEntryForm();
+                // add at index 0 push the rest forward the data
+                column_data.splice(0,0,data); // 0 index, delete 0 items, insert data
+                // rebuild table
+                current_page = 1; // just so that user sees feedback
+                buildTable();
+                document.getElementById("processing_query").innerHTML = "";
+            } else {
+                displayAlert(response.query_result);
+            }
+        },
+        error: function(xhr) {
+            clearInputsNewEntryForm();
+            displayAlert("Couldn't Process Query");
+        }
+    });
+}
+
+function clearInputsNewEntryForm() {
+    for (let i = 0; i < column_names.length; i++) {
+        document.getElementById('new_entry_input_'+i).value = "";
+    }
 }

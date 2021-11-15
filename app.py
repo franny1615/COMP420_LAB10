@@ -82,6 +82,24 @@ def delete_table_row(db,tb,cols,vals):
         result, cursor = execute_sql(sql,True)
     return result
 
+def add_new_row(db,tb,cols,vals):
+    sql = "USE " + db
+    result, cursor = execute_sql(sql,False)
+    if (result == "Success"):
+        sql = "INSERT INTO " + tb + " ("
+        for i in range(len(cols)):
+            sql += cols[i]
+            if (i + 1 != len(cols)):
+                sql += ','
+        sql += ") VALUES ("
+        for i in range(len(vals)):
+            sql += '"' + vals[i] + '"'
+            if (i + 1 != len(vals)):
+                sql += ','
+        sql += ');'
+        result, cursor = execute_sql(sql,True)
+    return result
+
 @app.route("/")
 def home():
     return render_template("index.html", dblist=dblistFiltered, tablelist=tblistFiltered)
@@ -132,6 +150,18 @@ def deleteRowRoute():
     cl = data['columns']
     vl = data['values']
     result = delete_table_row(db,tb,cl,vl)
+    return jsonify(
+        query_result = result
+    )
+
+@app.route("/addNewEntry",methods=['POST'])
+def insertNewItemRoute():
+    data = request.get_json()
+    db = data['db']
+    tb = data['tb']
+    cl = data['columns']
+    vl = data['values']
+    result = add_new_row(db,tb,cl,vl)
     return jsonify(
         query_result = result
     )
