@@ -16,6 +16,7 @@ let cache = [];
 function selectedDB(selectObject) {
     var dbValue = selectObject.value;
     cache = []; // clear any edits we were making
+    is_editing = false;
     $.ajax({
         url:"/updatetablelist",
         type:"post",
@@ -34,6 +35,7 @@ function selectedDB(selectObject) {
 
 function selectedTB(selectObject) {
     cache = []; // clear any edits we were making
+    is_editing = false;
     var dbValue = document.getElementById('dbselect').value;
     var tbValue = selectObject.value;
     callDisplayTable(dbValue,tbValue);
