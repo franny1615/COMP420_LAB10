@@ -45,6 +45,17 @@ def fetch_table_data(db,tb):
             items_count = len(table_items)
     return (table_items, colmn_names, items_count, result)
 
+def run_single_sql_query(sql):
+    result, cursor = execute_sql(sql,False)
+    table_items = None
+    colmn_names = None
+    items_count = 0
+    if result == "Success":
+        table_items = cursor.fetchall()
+        colmn_names = [column[0] for column in cursor.description]
+        items_count = len(table_items)
+    return (table_items, colmn_names, items_count, result)
+
 def update_table_data(db,tb,cols,vals,prevvals):
     sql = "USE " + db
     result, cursor = execute_sql(sql,False)
@@ -163,6 +174,18 @@ def insertNewItemRoute():
     vl = data['values']
     result = add_new_row(db,tb,cl,vl)
     return jsonify(
+        query_result = result
+    )
+
+@app.route("/runSQLQuery",methods=['POST'])
+def runSQLQuery():
+    data = request.get_json()
+    sql = data['SQL']
+    table_items, column_names, table_length,result = run_single_sql_query(sql)
+    return jsonify(
+        table_data = table_items,
+        column_names = column_names,
+        table_length = table_length,
         query_result = result
     )
 

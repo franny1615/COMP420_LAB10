@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %} Home Page {% endblock %}
+{% block title %} L10 {% endblock %}
 {% block content %}
 <nav class="navbar navbar-light bg-light">
     <div class="container-fluid">
@@ -36,6 +36,18 @@
 
 <div class="h-100 p-5 text-white bg-dark rounded-3">
     <div id="processing_query"></div>
+    <div id="run_sql_queries">
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1"><b>SQL:</b></span>
+            <input type="text" id="sql_query_input" class="form-control" placeholder="SELECT * FROM table_x;">
+            <button class="btn btn-success" type="button" onclick="runSQLQuery()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
+            </button>
+            <small class="w-100">Disclaimer: any SQL meant to change DB or tables are NOT automatically committed.</small>
+        </div>
+    </div>
     <div id="displaytable"></div>
 </div>
 {% endblock %}

@@ -326,3 +326,39 @@ function clearInputsNewEntryForm() {
         document.getElementById('new_entry_input_'+i).value = "";
     }
 }
+
+function runSQLQuery() {
+    var sql = document.getElementById('sql_query_input').value;
+    if(sql !== "") {
+        $.ajax({
+            url:"/runSQLQuery",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                SQL: sql 
+            }),
+            beforeSend: function() {
+                document.getElementById("processing_query").innerHTML = displayLoadingBar("Processing Query");
+            },
+            success: function(response) {
+                if (response.query_result === "Success") {
+                    number_of_items = response.table_length;
+                    current_page = 1;
+                    number_of_pages = Math.ceil(number_of_items/number_per_page);
+                    column_names = response.column_names;
+                    column_data = response.table_data;
+                    // rebuild table
+                    current_page = 1; // just so that user sees feedback
+                    buildTable();
+                    document.getElementById("processing_query").innerHTML = "";
+                } else {
+                    displayAlert(response.query_result);
+                }
+            },
+            error: function(xhr) {
+                clearInputsNewEntryForm();
+                displayAlert("Couldn't Process Query");
+            }
+        });
+    }
+}
