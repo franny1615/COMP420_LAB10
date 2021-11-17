@@ -213,4 +213,4 @@ if __name__ == "__main__":
     # fetch set of tables for the db that is displayed on page load
     tblistFiltered, result = fetch_table_list(dblistFiltered[0])
     atexit.register(exit_handler)
-    app.run(host='0.0.0.0',debug=False,port=environ.get("PORT", 5000))
+    app.run(host='0.0.0.0',debug=False)
